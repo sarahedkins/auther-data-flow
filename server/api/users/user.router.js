@@ -35,6 +35,7 @@ router.post('/', function (req, res, next) {
 router.post('/signup', function (req, res, next) {
 	User.create(req.body)
 	.then(function (user) {
+		req.session.userId = user._id;
 		res.status(200).json(user);
 	})
 	.then(null, function(err) {
@@ -43,11 +44,12 @@ router.post('/signup', function (req, res, next) {
 });
 
 router.post('/login', function (req, res, next) {
-	//login with username + password
+	//login with userId + password
 	User.findOne({email: req.body.email}).exec()
 	.then(function (user) {
 		if (user.password === req.body.password) {
-			console.log('success! - ', user);
+			console.log('successful login!');
+			req.session.userId = user._id;
 			res.status(200).json(user);
 		} else {
 			console.log('bad password!!')
@@ -58,6 +60,11 @@ router.post('/login', function (req, res, next) {
 		res.send(401);
 	});
 });
+
+router.post('/logout', function(req, res, next){
+	delete req.session.userId;
+	res.send(202);
+})
 
 router.get('/:id', function (req, res, next) {
 	req.requestedUser.getStories()

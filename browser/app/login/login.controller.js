@@ -3,8 +3,8 @@
 app.controller('LoginCtrl', function ($scope, AuthFactory) {
     $scope.login = function() {
 		AuthFactory.login($scope.emailInput, $scope.passwordInput)
-		.then(function (data) {
-			console.log(data);
+		.then(function (response) {
+			AuthFactory.setCurrentUser(response.data);
 		})
 		.then(null, function(err) {
 			console.log("ERROR - ", err);
