@@ -27,7 +27,8 @@ app.factory('AuthFactory', function ($http) {
 				})
 		},
 		getCurrentUser: function(){
-		return currentUser;
+			console.log('in authfactory - ', currentUser);
+			return currentUser;
 		},
 		setCurrentUser: function(val){
 			currentUser = val;

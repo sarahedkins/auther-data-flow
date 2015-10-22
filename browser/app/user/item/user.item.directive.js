@@ -25,8 +25,11 @@ app.directive('userItem', function (AuthFactory) {
 				});
 			};
 
+			var user = AuthFactory.getCurrentUser();
 			scope.isAdmin = function(){
-				return AuthFactory.getCurrentUser().isAdmin;
+				if (user) {
+					return user.isAdmin;
+				} else return false;
 			}
 		}
 	}

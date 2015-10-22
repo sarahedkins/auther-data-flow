@@ -14,10 +14,17 @@ app.directive('navbar', function ($state, $location, AuthFactory) {
 				AuthFactory.logout()
 					.then(function(response){
 						if (response.status === 202) {
+							scope.currentUser = null;
+							AuthFactory.setCurrentUser(null);
 							console.log("It's deleted!");
 						}
 					})
 			}
+			scope.$on('login', function(event, user) {
+				console.log('login event on..', user)
+				scope.currentUser = user;
+			})
+			//scope.currentUser = AuthFactory.getCurrentUser;
 		}
 	}
 });

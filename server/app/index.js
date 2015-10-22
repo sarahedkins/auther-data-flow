@@ -3,6 +3,7 @@
 var app = require('express')();
 var path = require('path');
 var passport = require('passport');
+var User = require('../api/users/user.model');
 
 // SESSIONS
 var session = require('express-session');
@@ -44,7 +45,7 @@ app.get('/auth/google', passport.authenticate('google', { scope : 'email' }));
 // handle the callback after google has authenticated the user
 app.get('/auth/google/callback',
 	passport.authenticate('google', {
-		successRedirect : '/home',
+		successRedirect : '/',
 		failureRedirect : '/'
 	}));
 //// end of google
@@ -63,11 +64,51 @@ passport.use(
 			 --- fill this part in ---
 			 */
 			console.log("WE ARE HERE in VERIFICATION", profile);
-			done();
+			console.log('token - ' , token);
+			User.findOne({'google.id': profile.id})
+			.then(function(user) {
+				if (user) {
+					console.log('google id found - ' + user)
+					return done(null, user);
+				} else {
+					var newUser = new User();
+			        // set all of the google information in our user model
+			        newUser.google.id = profile.id; // set the users google id                   
+			        newUser.google.token = token; // we will save the token that google provides to the user                    
+			        newUser.google.name = profile.displayName; // look at the passport user profile to see how names are returned
+			        newUser.google.email = profile.emails[0].value; // google can return multiple emails so we'll take the first
+			        // don't forget to include the user's email, name, and photo
+			        newUser.email = newUser.google.email; // required field
+			        newUser.name = newUser.google.name; // nice to have
+			        newUser.photo = profile.photos[0].value; // nice to have
+			        // save our user to the database
+			        User.create(newUser)
+			        .then(function (data) {
+			        	console.log('created new google user - ', data);
+			        	return done(null, newUser);
+			        })
+			        .then(null, function (err) {
+			        	return done(err);
+			        })
+				}
+				
+			})
+			.then(null, function(err) {
+				done(err);
+			})
+			//done();
 		})
 );
 
+passport.serializeUser(function (user, done) {
+    done(null, user._id);
+});
 
+passport.deserializeUser(function (id, done) {
+    User.findById(id, done);
+});
+
+//ya29.FAJyHaT8_FPe1t7WHE54zWy-ndnCoOHX73WAgEawxe3JZCRKepvfRO5Vk0KeceAJOX1r
 app.use(require('./error.middleware'));
 
 
